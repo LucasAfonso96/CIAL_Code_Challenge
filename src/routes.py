@@ -1,10 +1,13 @@
 from fastapi import Depends, HTTPException, APIRouter, Request
 from sqlalchemy.orm import Session
-
-from ..src.services import fetch_polygon_data, scrape_marketwatch_data
+from .services import fetch_polygon_data, scrape_marketwatch_data
 from . import models, database
+from datetime import datetime
+from cachetools import TTLCache
 
 router = APIRouter()
+
+cache = TTLCache(maxsize=100, ttl=300)
 
 def get_db():
     db = database.SessionLocal()
@@ -15,11 +18,17 @@ def get_db():
 
 @router.get("/stock/{stock_symbol}", response_model=models.Stock)
 async def get_stock(stock_symbol, db: Session = Depends(get_db)):
-    stock_data_from_api = fetch_polygon_data(stock_symbol)
-    
-    marketwatch_data = await scrape_marketwatch_data(stock_symbol)
+
+    if stock_symbol in cache:
+        cached_stock, cached_time = cache[stock_symbol]
+        if (datetime.now() - cached_time).total_seconds() <= 300:
+
+            return cached_stock
     
 
+    stock_data_from_api = fetch_polygon_data(stock_symbol)
+    marketwatch_data = await scrape_marketwatch_data(stock_symbol)
+    
     stock_data = {
         "afterHours": stock_data_from_api.get("afterHours"),
         "close": stock_data_from_api.get("close"),
@@ -41,6 +50,7 @@ async def get_stock(stock_symbol, db: Session = Depends(get_db)):
     db.add(db_stock)
     db.commit()
     
+    cache[stock_symbol] = (stock, datetime.now())
     return stock
 
 @router.post("/stock/{stock_symbol}")
