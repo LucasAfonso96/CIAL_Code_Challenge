@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, APIRouter, Request
 from sqlalchemy.orm import Session
 
-from src.services import fetch_polygon_data, scrape_marketwatch_data
+from ..src.services import fetch_polygon_data, scrape_marketwatch_data
 from . import models, database
 
 router = APIRouter()
@@ -23,7 +23,7 @@ async def get_stock(stock_symbol, db: Session = Depends(get_db)):
     stock_data = {
         "afterHours": stock_data_from_api.get("afterHours"),
         "close": stock_data_from_api.get("close"),
-        "from_": stock_data_from_api.get("from"),  # Renamed from 'from' to 'from_'
+        "from_": stock_data_from_api.get("from"),
         "high": stock_data_from_api.get("high"),
         "low": stock_data_from_api.get("low"),
         "open": stock_data_from_api.get("open"),
@@ -34,10 +34,9 @@ async def get_stock(stock_symbol, db: Session = Depends(get_db)):
         "performance": marketwatch_data,
         "amount": 0  
     }
-    # Construct Stock model
+
     stock = models.Stock(**stock_data)
-    
-    # Update or create entry in database
+
     db_stock = database.StockDB.from_pydantic(stock)
     db.add(db_stock)
     db.commit()

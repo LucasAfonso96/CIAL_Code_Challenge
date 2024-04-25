@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from .models import Stock
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./stocks.db"
@@ -9,8 +8,6 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-#Base.metadata.drop_all(bind=engine)
-
 
 class StockDB(Base):
     __tablename__ = "stocks"
@@ -31,7 +28,7 @@ class StockDB(Base):
 
     @classmethod
     def from_pydantic(cls, stock: "Stock"):
-        return cls(**stock.dict())
+        return cls(**stock.model_dump())
 
 
 Base.metadata.create_all(bind=engine)

@@ -5,13 +5,12 @@ import datetime
 import httpx
 
 def fetch_polygon_data(stock_symbol: str):
-    print('entrei', stock_symbol)
     # Change to the day before today, because the today date was returning me a error
     date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     api_key = "bs1n5Vdqoi_NOvmCZ_85rrcvtFnYN3vm"
     url = f"https://api.polygon.io/v1/open-close/{stock_symbol}/{date}?adjusted=True&apiKey={api_key}"
     response = requests.get(url)
-    print('r1', response)
+    print('response', response)
     if response.status_code == 200:
         return response.json()
     else:
