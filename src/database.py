@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, JSON
 from sqlalchemy.orm import sessionmaker, declarative_base
 from .models import Stock
+import os
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./stocks.db"
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+    
 Base = declarative_base()
 
 class StockDB(Base):
