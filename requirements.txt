@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+requests
+beautifulsoup4
+sqlalchemy
+asyncpg
+pytest
+pytest-asyncio
+sqlalchemy-utils
+cachetools
